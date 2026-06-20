@@ -12,19 +12,23 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:8080
-      - ConnectionStrings__CatalogDb=Host=catalog-db;Port=5432;Database=catalogdb;Username=postgres;Password=postgres
+
+      - ConnectionStrings__CatalogDatabase=Server=catalog-db;Database=CatalogDb;User Id=sa;Password=YourStrong@Pass123;TrustServerCertificate=True
       - ConnectionStrings__Redis=redis:6379
-      - RabbitMq__Host=rabbitmq
+
+      - RabbitMq__HostName=rabbitmq
       - RabbitMq__Port=5672
       - RabbitMq__Username=guest
       - RabbitMq__Password=guest
+
     depends_on:
       catalog-db:
-        condition: service_healthy
+        condition: service_started
       redis:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+
     networks:
       - mansari-network
 
@@ -38,16 +42,20 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:8080
-      - ConnectionStrings__OrderingDb=Host=ordering-db;Port=5432;Database=orderingdb;Username=postgres;Password=postgres
-      - RabbitMq__Host=rabbitmq
+
+      - ConnectionStrings__OrderingDatabase=Server=ordering-db;Database=OrderingDb;User Id=sa;Password=YourStrong@Pass123;TrustServerCertificate=True
+
+      - RabbitMq__HostName=rabbitmq
       - RabbitMq__Port=5672
       - RabbitMq__Username=guest
       - RabbitMq__Password=guest
+
     depends_on:
       ordering-db:
-        condition: service_healthy
+        condition: service_started
       rabbitmq:
         condition: service_healthy
+
     networks:
       - mansari-network
 
@@ -69,43 +77,41 @@ services:
 
   catalog-db:
     container_name: mansari-catalog-db
-    image: postgres:16
+    image: mcr.microsoft.com/mssql/server:2022-latest
+
     environment:
-      POSTGRES_DB: catalogdb
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "YourStrong@Pass123"
+
     ports:
-      - "5433:5432"
-    volumes:
-      - catalog-data:/var/lib/postgresql/data
+      - "1433:1433"
+
     restart: unless-stopped
+
+    volumes:
+      - catalog-data:/var/opt/mssql
+
     networks:
       - mansari-network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d catalogdb"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
   ordering-db:
     container_name: mansari-ordering-db
-    image: postgres:16
+    image: mcr.microsoft.com/mssql/server:2022-latest
+
     environment:
-      POSTGRES_DB: orderingdb
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "YourStrong@Pass123"
+
     ports:
-      - "5434:5432"
-    volumes:
-      - ordering-data:/var/lib/postgresql/data
+      - "1434:1433"
+
     restart: unless-stopped
+
+    volumes:
+      - ordering-data:/var/opt/mssql
+
     networks:
       - mansari-network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d orderingdb"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
   redis:
     container_name: mansari-redis

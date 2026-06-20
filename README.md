@@ -8,12 +8,10 @@ A sample **microservices-based store backend** built with ASP.NET Core and moder
 ![Architecture](https://img.shields.io/badge/Architecture-Microservices-orange)
 ![Messaging](https://img.shields.io/badge/Messaging-RabbitMQ-red)
 ![Cache](https://img.shields.io/badge/Cache-Redis-green)
-![Database](https://img.shields.io/badge/Database-PostgreSQL-blue)
-![License](https://img.shields.io/badge/License-MIT-yellow)
 ![Docker](https://img.shields.io/badge/Container-Docker-blue)
 ![CQRS](https://img.shields.io/badge/Pattern-CQRS-lightgrey)
 
-
+Mansari Store is a simple book ordering system implemented using a microservices architecture.
 The solution contains two business services:
 
 - Catalog Service (manages books and stock)
@@ -28,9 +26,10 @@ The project demonstrates:
 - Eventual Consistency
 - Choreography-based Saga
 - Outbox / Inbox pattern
-- Polly retry, circuit breaker and resiliency
+- Polly retry and resiliency
 - Docker Compose orchestration
 - GitHub Actions CI
+
 
 ------------------------------------------------------------
 1) CATALOG SERVICE WITH REDIS CACHE

@@ -1,0 +1,154 @@
+version: '3.9'
+
+services:
+
+  catalog-api:
+    container_name: mansari-catalog-api
+    build:
+      context: .
+      dockerfile: src/Mansari.Store.Catalog/Mansari.Store.Catalog.Api/Dockerfile
+    ports:
+      - "5001:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__CatalogDb=Host=catalog-db;Port=5432;Database=catalogdb;Username=postgres;Password=postgres
+      - ConnectionStrings__Redis=redis:6379
+      - RabbitMq__Host=rabbitmq
+      - RabbitMq__Port=5672
+      - RabbitMq__Username=guest
+      - RabbitMq__Password=guest
+    depends_on:
+      catalog-db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - mansari-network
+
+  ordering-api:
+    container_name: mansari-ordering-api
+    build:
+      context: .
+      dockerfile: src/Mansari.Store.Ordering/Mansari.Store.Ordering.Api/Dockerfile
+    ports:
+      - "5002:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__OrderingDb=Host=ordering-db;Port=5432;Database=orderingdb;Username=postgres;Password=postgres
+      - RabbitMq__Host=rabbitmq
+      - RabbitMq__Port=5672
+      - RabbitMq__Username=guest
+      - RabbitMq__Password=guest
+    depends_on:
+      ordering-db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - mansari-network
+
+  gateway:
+    container_name: mansari-gateway
+    build:
+      context: .
+      dockerfile: src/Mansari.Store.Gateway/Dockerfile
+    ports:
+      - "5000:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+    depends_on:
+      - catalog-api
+      - ordering-api
+    networks:
+      - mansari-network
+
+  catalog-db:
+    container_name: mansari-catalog-db
+    image: postgres:16
+    environment:
+      POSTGRES_DB: catalogdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - catalog-data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - mansari-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d catalogdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  ordering-db:
+    container_name: mansari-ordering-db
+    image: postgres:16
+    environment:
+      POSTGRES_DB: orderingdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5434:5432"
+    volumes:
+      - ordering-data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - mansari-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d orderingdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    container_name: mansari-redis
+    image: redis:7
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    networks:
+      - mansari-network
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  rabbitmq:
+    container_name: mansari-rabbitmq
+    image: rabbitmq:3-management
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    restart: unless-stopped
+    networks:
+      - mansari-network
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  mansari-network:
+    driver: bridge
+
+volumes:
+  catalog-data:
+  ordering-data:
+  redis-data:
+  rabbitmq-data:

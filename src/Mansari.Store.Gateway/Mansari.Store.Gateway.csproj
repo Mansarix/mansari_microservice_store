@@ -7,6 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Folder Include="Common\Constants\" />
+    <Folder Include="Extensions\" />
     <Folder Include="GrpcClients\Basket\" />
     <Folder Include="GrpcClients\Catalog\" />
     <Folder Include="GrpcClients\User\" />

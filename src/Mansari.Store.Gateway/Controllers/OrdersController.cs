@@ -6,17 +6,17 @@ namespace Mansari.Store.Gateway.Controllers;
 [Route("api/orders")]
 public class OrdersController : ControllerBase
 {
-    private readonly OrderDetailsService _service;
+    //private readonly OrderDetailsService _service;
 
-    public OrdersController(OrderDetailsService service)
-    {
-        _service = service;
-    }
+    //public OrdersController(OrderDetailsService service)
+    //{
+    //    _service = service;
+    //}
 
     [HttpGet("{id}/details")]
     public async Task<IActionResult> GetOrderDetails(Guid id)
     {
-        var result = await _service.GetOrderDetails(id);
-        return Ok(result);
+        //var result = await _service.GetOrderDetails(id);
+        return Ok(); //ok(result)
     }
 }

@@ -1,4 +1,3 @@
-using Mansari.Store.Catalog.Api.Grpc;
 using Mansari.Store.Catalog.Application.Books.Command.CreateBook;
 using Mansari.Store.Catalog.Infrastructure;
 using Mansari.Store.Catalog.Infrastructure.Persistence;
@@ -21,7 +20,7 @@ builder.Services.AddMediatR(cfg =>
         typeof(CreateBookCommand).Assembly);
 });
 
-builder.Services.AddGrpc();
+//builder.Services.AddGrpc();
 
 var app = builder.Build();
 
@@ -40,7 +39,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.MapGrpcService<CatalogGrpcService>();
+//app.MapGrpcService<CatalogGrpcService>();
 
 app.UseHttpsRedirection();
 

@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+option csharp_namespace = "Mansari.Store.Gateway.Grpc.Catalog";
+
+service CatalogService {
+  rpc GetBookById (GetBookRequest) returns (BookResponse);
+}
+
+message GetBookRequest {
+  string id = 1;
+}
+
+message BookResponse {
+  string id = 1;
+  string title = 2;
+  string author = 3;
+  double price = 4;
+}

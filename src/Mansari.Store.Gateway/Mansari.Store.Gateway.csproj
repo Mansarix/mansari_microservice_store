@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Extensions\" />
+  </ItemGroup>
+
+	<ItemGroup>
+		<Protobuf Include="..\Mansari.Store.Contracts\Protos\catalog.proto" GrpcServices="Client" />
+	    <Protobuf Include="..\Mansari.Store.Contracts\Protos\ordering.proto" GrpcServices="Client" />
+	</ItemGroup>
+
+</Project>

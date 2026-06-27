@@ -1,0 +1,104 @@
+syntax = "proto3";
+
+option csharp_namespace = "Mansari.Store.Users.Api.Contracts";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+package mansari.store.users;
+
+service Users {
+  rpc CreateUser (CreateUserRequest) returns (UserResponse);
+  rpc UpdateUser (UpdateUserRequest) returns (UserResponse);
+  rpc DeleteUser (DeleteUserRequest) returns (google.protobuf.Empty);
+  rpc GetUserById (GetUserByIdRequest) returns (UserResponse);
+  rpc GetUserByNationalCode (GetUserByNationalCodeRequest) returns (UserResponse);
+  rpc GetUserByUsername (GetUserByUsernameRequest) returns (UserResponse);
+  rpc GetUsers (GetUsersRequest) returns (GetUsersResponse);
+}
+
+enum Gender {
+  GENDER_UNSPECIFIED = 0;
+  GENDER_MALE = 1;
+  GENDER_FEMALE = 2;
+  GENDER_OTHER = 3;
+}
+
+enum UserStatus {
+  STATUS_UNSPECIFIED = 0;
+  STATUS_ACTIVE = 1;
+  STATUS_INACTIVE = 2;
+  STATUS_SUSPENDED = 3;
+}
+
+message CreateUserRequest {
+  string first_name = 1;
+  string last_name = 2;
+  string national_code = 3;
+  string mobile_number = 4;
+  string username = 5;
+  string email = 6;
+  string birth_date = 7;
+  Gender gender = 8;
+}
+
+message UpdateUserRequest {
+  string id = 1;
+  string first_name = 2;
+  string last_name = 3;
+  string national_code = 4;
+  string mobile_number = 5;
+  string username = 6;
+  string email = 7;
+  string birth_date = 8;
+  Gender gender = 9;
+  UserStatus status = 10;
+}
+
+message DeleteUserRequest {
+  string id = 1;
+}
+
+message GetUserByIdRequest {
+  string id = 1;
+}
+
+message GetUserByNationalCodeRequest {
+  string national_code = 1;
+}
+
+message GetUserByUsernameRequest {
+  string username = 1;
+}
+
+message GetUsersRequest {
+  string search_term = 1;
+  UserStatus status = 2;
+  int32 page_number = 3;
+  int32 page_size = 4;
+}
+
+message UserResponse {
+  string id = 1;
+  string first_name = 2;
+  string last_name = 3;
+  string full_name = 4;
+  string national_code = 5;
+  string mobile_number = 6;
+  string username = 7;
+  string email = 8;
+  string birth_date = 9;
+  Gender gender = 10;
+  UserStatus status = 11;
+  bool is_deleted = 12;
+  google.protobuf.Timestamp created_at_utc = 13;
+  google.protobuf.Timestamp updated_at_utc = 14;
+  google.protobuf.Timestamp deleted_at_utc = 15;
+}
+
+message GetUsersResponse {
+  repeated UserResponse items = 1;
+  int32 total_count = 2;
+  int32 page_number = 3;
+  int32 page_size = 4;
+}

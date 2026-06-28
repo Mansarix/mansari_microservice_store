@@ -13,280 +13,206 @@ A sample **microservices-based store backend** built with ASP.NET Core and moder
 ![Docker](https://img.shields.io/badge/Container-Docker-blue)
 ![CQRS](https://img.shields.io/badge/Pattern-CQRS-lightgrey)
 
-# Mansari Store - Microservices Book Ordering System
+# Mansari Store
 
-Mansari Store is a simple book ordering system implemented using a microservices architecture.
+A modern microservices-based backend built with **ASP.NET Core 8**, demonstrating clean architecture, distributed system patterns, and service orchestration.
 
-The solution contains two business services:
+![.NET](https://img.shields.io/badge/.NET-8.0-purple)
+![Architecture](https://img.shields.io/badge/Microservices-Clean%20Architecture-orange)
+![Messaging](https://img.shields.io/badge/RabbitMQ-Event%20Driven-red)
+![Gateway](https://img.shields.io/badge/API-Gateway-blue)
+![gRPC](https://img.shields.io/badge/Internal-gRPC-green)
+![Database](https://img.shields.io/badge/PostgreSQL-blue)
+![Cache](https://img.shields.io/badge/Redis-success)
+![Docker](https://img.shields.io/badge/Docker-Compose-2496ED)
 
-- Catalog Service (manages books and stock)
-- Ordering Service (manages orders)
+---
 
-The project demonstrates:
+## Overview
+
+Mansari Store is a learning-focused microservices project designed to explore modern backend architecture using .NET.
+
+The solution follows a service-oriented architecture where each microservice owns its own domain, persistence, and business logic while communicating through asynchronous messaging and gRPC.
+
+Current services:
+
+- Catalog Service
+- Ordering Service
+- Basket Service
+- User Service
+- API Gateway
+- Shared Contracts
+
+---
+
+## Architecture
+
+```
+                Client
+                   │
+             REST / HTTP
+                   │
+            ┌──────────────┐
+            │ API Gateway  │
+            └──────┬───────┘
+                   │
+          Internal gRPC Calls
+                   │
+    ┌────────┬─────────┬────────┬────────┐
+    │Catalog │Ordering │Basket  │ User   │
+    └────────┴─────────┴────────┴────────┘
+                   │
+        RabbitMQ Integration Events
+                   │
+            Event Driven Architecture
+```
+
+### Design Principles
 
 - Clean Architecture
 - CQRS with MediatR
-- Redis caching
-- RabbitMQ asynchronous messaging
+- Domain-Driven Design (lightweight)
+- API Gateway Aggregation
+- Internal gRPC Communication
+- Event-Driven Messaging
 - Eventual Consistency
-- Choreography-based Saga
-- Outbox / Inbox pattern
-- Polly retry and resiliency
-- Docker Compose orchestration
-- GitHub Actions CI
+- Choreography Saga
+- Outbox / Inbox Pattern
+- Redis Caching
+- Polly Resilience Policies
 
-------------------------------------------------------------
-SOLUTION STRUCTURE
-------------------------------------------------------------
+---
 
+## Solution Structure
+
+```
 src/
-  Mansari.Store.Catalog/
-    Mansari.Store.Catalog.Api/
-    Mansari.Store.Catalog.Application/
-    Mansari.Store.Catalog.Domain/
-    Mansari.Store.Catalog.Infrastructure/
 
-  Mansari.Store.Ordering/
-    Mansari.Store.Ordering.Api/
-    Mansari.Store.Ordering.Application/
-    Mansari.Store.Ordering.Domain/
-    Mansari.Store.Ordering.Infrastructure/
+├── Mansari.Store.Catalog/
+├── Mansari.Store.Ordering/
+├── Mansari.Store.Basket/
+├── Mansari.Store.User/
+├── Mansari.Store.Gateway/
+└── Mansari.Store.Contracts/
+```
 
-  Mansari.Store.Contracts/
-    Catalog/
-    Order/
+Each microservice follows the same layered architecture:
 
-  Mansari.Store.Gateway/
+```
+API
+Application
+Domain
+Infrastructure
+```
 
-------------------------------------------------------------
-1) CATALOG SERVICE WITH REDIS CACHE
-------------------------------------------------------------
+---
 
-The Catalog Service provides full CRUD operations for Book entity:
+## API Gateway
 
-- Id
-- Title
-- Author
-- Stock
-- Price
+The Gateway acts as an **Aggregation Layer**, not merely a reverse proxy.
 
-GetBookById flow:
+Responsibilities:
 
-1. Check Redis cache first.
-2. If cache miss occurs, read from database.
-3. Store result in Redis for 5 minutes.
-4. On update or delete, invalidate cache.
+- HTTP entry point
+- Service orchestration
+- gRPC communication
+- Response aggregation
+- Error translation
+- Resiliency
 
-Redis implementation file:
-src/Mansari.Store.Catalog/Mansari.Store.Catalog.Infrastructure/Caching/RedisBookCacheService.cs
+The Gateway intentionally contains **no business logic**.
 
-Cache invalidation is performed after update/delete:
+---
 
-await _cache.RemoveAsync(book.Id, cancellationToken);
+## Communication
 
-Redis is configured in docker-compose.
+External clients communicate using REST.
 
-------------------------------------------------------------
-2) ORDER CREATION WITH EVENTUAL CONSISTENCY
-------------------------------------------------------------
+Internal service-to-service communication uses:
 
-Order flow:
+- gRPC
+- Protocol Buffers
 
-1. Client sends BookId and Quantity to Ordering Service.
-2. Ordering Service creates order with status = Pending.
-3. Ordering Service publishes OrderCreatedEvent.
-4. Catalog Service consumes OrderCreatedEvent.
-5. Catalog checks stock.
-6. If stock is sufficient:
-      - decrease stock
-      - publish StockReservedEvent
-7. If stock is insufficient:
-      - publish StockFailedEvent
-8. Ordering Service consumes result event:
-      - StockReservedEvent => status = Confirmed
-      - StockFailedEvent => status = Failed
+Asynchronous workflows use:
 
-This implements a choreography-based saga using RabbitMQ.
+- RabbitMQ
 
-Contracts are defined in:
+---
 
-src/Mansari.Store.Contracts/
+## Technology Stack
 
-------------------------------------------------------------
-3) RESILIENCY
-------------------------------------------------------------
+- ASP.NET Core 8
+- Entity Framework Core
+- PostgreSQL
+- Redis
+- RabbitMQ
+- MediatR
+- gRPC
+- Polly
+- Docker Compose
 
-The system implements multiple resiliency techniques to ensure reliable message processing.
+---
 
-Durable Messaging
-RabbitMQ exchanges and queues are declared as durable, ensuring messages survive broker restarts.
+## Running the Project
 
-Messages are also published as persistent.
-
-Relevant implementation:
-
-src/Mansari.Store.Catalog/Mansari.Store.Catalog.Infrastructure/Messaging/Consumers/OrderCreatedEventConsumer.cs
-
-The consumer uses manual acknowledgements:
-
-autoAck = false
-BasicAck only after successful processing
-BasicNack(requeue: true) on transient failures
-This ensures that if the Catalog service is down, RabbitMQ keeps the message and delivers it again when the service becomes available.
-
-Inbox Pattern (Idempotency)
-Consumers use an Inbox table to guarantee idempotent message processing.
-
-Example:
-
-src/Mansari.Store.Catalog/Mansari.Store.Catalog.Infrastructure/Persistence/Inbox/InboxMessage.cs
-
-Each incoming event is recorded and processed only once.
-
-Outbox Pattern (Reliable Event Publishing)
-Both services implement the Outbox Pattern to guarantee reliable event publishing.
-
-Events are stored in the database and later published by a background processor.
-
-Implementation:
-
-src/Mansari.Store.Catalog/Mansari.Store.Catalog.Infrastructure/Persistence/Outbox/OutboxProcessor.cs
-
-Retry and Fault Handling with Polly
-The OutboxProcessor uses Polly to handle transient failures when publishing messages.
-
-Implemented strategies:
-
-Retry with exponential backoff
-Circuit Breaker
-Failed messages are retried automatically based on NextRetryOnUtc.
-
-This ensures reliable message delivery even during temporary infrastructure failures.
-
-------------------------------------------------------------
-4) MEDIATR
-------------------------------------------------------------
-
-MediatR is used for:
-
-- CreateBookCommand
-- CreateOrderCommand
-- Queries (GetBookById, GetAllBooks)
-
-Handlers are located in Application layer under Commands and Queries folders.
-
-------------------------------------------------------------
-5) CLEAN ARCHITECTURE
-------------------------------------------------------------
-
-Each microservice contains:
-
-- API layer
-- Application layer
-- Domain layer
-- Infrastructure layer
-
-API:
-Controllers and startup configuration.
-
-Application:
-Use cases, commands, queries, DTOs, interfaces.
-
-Domain:
-Entities, value objects, business rules.
-
-Infrastructure:
-Database, Redis, RabbitMQ, Outbox, Inbox implementations.
-
-------------------------------------------------------------
-6) DOCKERIZATION
-------------------------------------------------------------
-
-The root contains docker-compose.yml.
-
-Services included:
-
-- catalog-api
-- ordering-api
-- gateway
-- catalog-db (PostgreSQL)
-- ordering-db (PostgreSQL)
-- redis
-- rabbitmq
-
-Run the system:
-
+```bash
 docker compose up --build
+```
 
-Stop the system:
+Stop:
 
+```bash
 docker compose down
+```
 
 Remove volumes:
 
+```bash
 docker compose down -v
+```
 
-------------------------------------------------------------
-DEFAULT PORTS
-------------------------------------------------------------
+---
 
-Gateway:            http://localhost:5000
-Catalog API:        http://localhost:5001
-Ordering API:       http://localhost:5002
-RabbitMQ UI:        http://localhost:15672
+## Current Status
 
-RabbitMQ credentials:
-username: guest
-password: guest
+Implemented:
 
-PostgreSQL credentials:
-username: postgres
-password: postgres
+- Catalog Service
+- Ordering Service
+- Basket Service
+- User Service
+- Shared Contracts
+- API Gateway (Aggregation)
+- Redis Cache
+- RabbitMQ Messaging
+- CQRS
+- Clean Architecture
+- Docker Compose
 
-------------------------------------------------------------
-EXAMPLE FLOW
-------------------------------------------------------------
+In Progress:
 
-1) Create Book
+- Gateway Aggregations
+- Gateway Resilience
+- Observability
+- Integration Tests
 
-POST http://localhost:5001/api/books
+---
 
-{
-  "title": "Clean Architecture",
-  "author": "Robert C. Martin",
-  "price": 45.50,
-  "currency": "USD",
-  "stock": 10
-}
+## Project Goals
 
-2) Get Book
+This project is primarily built to explore practical software architecture concepts, including:
 
-GET http://localhost:5001/api/books/{bookId}
+- scalable microservices
+- clean boundaries
+- distributed communication
+- resilient systems
+- maintainable backend design
 
-First request loads from database and caches result.
-Subsequent requests are served from Redis.
+---
 
-3) Create Order
+## License
 
-POST http://localhost:5002/api/orders
-
-{
-  "bookId": "{bookId}",
-  "quantity": 2
-}
-
-Order is created as Pending.
-Events are exchanged via RabbitMQ.
-Final status becomes Confirmed or Failed.
-
-------------------------------------------------------------
-CONSISTENCY MODEL
-------------------------------------------------------------
-
-The system uses Eventual Consistency.
-
-Ordering Service does not call Catalog synchronously.
-All communication is done through integration events.
+MIT 
 
 ------------------------------------------------------------
 CI

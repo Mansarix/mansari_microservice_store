@@ -1,18 +1,3 @@
-
-# Mansari Store - Microservices Book Ordering System
-
-A sample **microservices-based store backend** built with ASP.NET Core and modern distributed system patterns.
-
-![.NET](https://img.shields.io/badge/.NET-8.0-purple)
-![ASP.NET Core](https://img.shields.io/badge/ASP.NET%20Core-WebAPI-blue)
-![Architecture](https://img.shields.io/badge/Architecture-Microservices-orange)
-![Messaging](https://img.shields.io/badge/Messaging-RabbitMQ-red)
-![Cache](https://img.shields.io/badge/Cache-Redis-green)
-![Database](https://img.shields.io/badge/Database-PostgreSQL-blue)
-![License](https://img.shields.io/badge/License-MIT-yellow)
-![Docker](https://img.shields.io/badge/Container-Docker-blue)
-![CQRS](https://img.shields.io/badge/Pattern-CQRS-lightgrey)
-
 # Mansari Store
 
 A modern microservices-based backend built with **ASP.NET Core 8**, demonstrating clean architecture, distributed system patterns, and service orchestration.

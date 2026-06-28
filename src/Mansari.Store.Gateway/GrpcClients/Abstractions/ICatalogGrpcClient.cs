@@ -1,6 +1,6 @@
 ﻿namespace Mansari.Store.Gateway.GrpcClients.Abstractions
 {
-    public class IBasketGrpcClient
+    public class ICatalogGrpcClient
     {
     }
 }

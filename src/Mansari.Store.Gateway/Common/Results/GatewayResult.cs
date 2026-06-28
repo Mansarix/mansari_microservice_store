@@ -1,9 +1,5 @@
 ﻿namespace Mansari.Store.Gateway.Common.Results;
 
-//من عاشق این گیتوی ریزالت شدم! اگه درکش بکنی عمقشو تو هم عاشقش میشی
-// خیلی وقت گرفت 40 خط کد شاید به اندازه یک میکروسرویس کامل وقت گرفت و شاید 8 بار از اول طراحیش کردم تا به این نسخه رسید
-//ساده نگذر ازش ، برو تو عمقش ، لذت ببر 
-// یک باندد کانتکست تشخیص داده شده! یک زبان مشترک! این ریزالت تمام خروجی ها را هندل میکند
 public sealed class GatewayResult<T>
 {
     public bool IsSuccess { get; }
@@ -12,7 +8,7 @@ public sealed class GatewayResult<T>
 
     public GatewayError? Error { get; }
 
-    private GatewayResult(
+    internal GatewayResult(
         bool isSuccess,
         T? value,
         GatewayError? error)
@@ -33,14 +29,17 @@ public sealed class GatewayResult<T>
         Value = value;
         Error = error;
     }
+}
 
-    internal static GatewayResult<T> Success(T value)
+public static class GatewayResult
+{
+    public static GatewayResult<T> Success<T>(T value)
         => new(
             true,
             value,
             null);
 
-    internal static GatewayResult<T> Failure(GatewayError error)
+    public static GatewayResult<T> Failure<T>(GatewayError error)
         => new(
             false,
             default,

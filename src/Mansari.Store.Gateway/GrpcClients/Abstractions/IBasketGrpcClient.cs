@@ -1,6 +1,10 @@
-﻿namespace Mansari.Store.Gateway.GrpcClients.Abstractions
+﻿using Mansari.Store.Gateway.Contracts.Basket;
+
+namespace Mansari.Store.Gateway.GrpcClients.Abstractions;
+
+public interface IBasketGrpcClient
 {
-    public class IBasketGrpcClient
-    {
-    }
+    Task<BasketModel> GetBasketAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default);
 }

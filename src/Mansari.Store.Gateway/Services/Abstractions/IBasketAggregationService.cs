@@ -1,8 +1,11 @@
-﻿namespace Mansari.Store.Gateway.Services.Abstractions;
+﻿using Mansari.Store.Gateway.Common.Results;
+using Mansari.Store.Gateway.Contracts.Basket;
+
+namespace Mansari.Store.Gateway.Services.Abstractions;
 
 public interface IBasketAggregationService
 {
-    Task<IResult> GetBasketAsync(
+    Task<GatewayResult<BasketModel>> GetBasketAsync(
         Guid userId,
         CancellationToken cancellationToken = default);
 }

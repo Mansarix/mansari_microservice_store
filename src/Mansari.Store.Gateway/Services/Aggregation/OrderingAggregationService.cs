@@ -1,6 +1,6 @@
 ﻿namespace Mansari.Store.Gateway.Services.Aggregation
 {
-    public class BasketAggregationService
+    public class OrderingAggregationService
     {
     }
 }

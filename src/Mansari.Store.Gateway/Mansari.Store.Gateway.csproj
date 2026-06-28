@@ -8,16 +8,18 @@
 
   <ItemGroup>
     <Folder Include="Common\Constants\" />
-    <Folder Include="Extensions\" />
-    <Folder Include="GrpcClients\Basket\" />
     <Folder Include="GrpcClients\Catalog\" />
     <Folder Include="GrpcClients\User\" />
     <Folder Include="GrpcClients\Ordering\" />
-    <Folder Include="Models\Common\" />
-    <Folder Include="Models\Catalog\" />
-    <Folder Include="Models\User\" />
-    <Folder Include="Models\Ordering\" />
+    <Folder Include="Contracts\Common\" />
+    <Folder Include="Contracts\Catalog\" />
+    <Folder Include="Contracts\User\" />
+    <Folder Include="Contracts\Ordering\" />
     <Folder Include="Protos\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Grpc.Core.Api" Version="2.65.0" />
   </ItemGroup>
 
 	<ItemGroup>
